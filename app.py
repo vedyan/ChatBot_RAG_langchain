@@ -1,5 +1,6 @@
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
 import os
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -17,7 +18,15 @@ from langchain_core.prompts import PromptTemplate
 load_dotenv()
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 app = FastAPI()
+port = int(os.environ.get("PORT", 5000))
 app.mount("/static", StaticFiles(directory="static"), name="static")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 vector_store = None
 conversation_chain = None
 class Query(BaseModel):
@@ -94,4 +103,4 @@ async def query(query: Query):
         return JSONResponse(status_code=500, content={"error": str(e)})
 if __name__ == '__main__':
     import uvicorn
-    uvicorn.run(app, port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=port)
