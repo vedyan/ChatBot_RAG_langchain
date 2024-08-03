@@ -1,36 +1,81 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Real-Time Face Anti-Spoofing</title>
-    <style>
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #F0F0F0;
-            font-family: Arial, sans-serif;
-        }
-        h1 {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .container {
-            text-align: center;
-        }
-        video {
-            border: 5px solid #333;
-            border-radius: 10px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDF Chatbot</title>
 </head>
 <body>
-    <div class="container">
-        <h1>Real-Time Face Anti-Spoofing</h1>
-        <img id="video-feed" src="{{ url_for('video_feed') }}" alt="Video feed not available">
-    </div>
+  <h1>PDF Chatbot</h1>
+  <div>
+    <input type="file" id="fileInput" />
+    <button onclick="uploadFile()">Upload PDF</button>
+  </div>
+  <div>
+    <input type="text" id="queryInput" placeholder="Enter your query" />
+    <button onclick="submitQuery()">Submit Query</button>
+  </div>
+  <div id="responseContainer"></div>
+
+  <script>
+    async function uploadFile() {
+      const fileInput = document.getElementById('fileInput');
+      if (!fileInput.files.length) {
+        alert('Please select a file first!');
+        return;
+      }
+
+      const file = fileInput.files[0];
+      const formData = new FormData();
+      formData.append('file', file);
+
+      try {
+        const response = await fetch('/upload', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (response.ok) {
+          alert('File uploaded successfully');
+        } else {
+          alert('File upload failed');
+        }
+      } catch (error) {
+        console.error('Error uploading file:', error);
+        alert('File upload failed');
+      }
+    }
+
+    async function submitQuery() {
+      const queryInput = document.getElementById('queryInput');
+      const query = queryInput.value;
+
+      if (!query) {
+        alert('Please enter a query first!');
+        return;
+      }
+
+      try {
+        const response = await fetch('/query', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ query: query, session_id: 'test' })
+        });
+
+        const data = await response.json();
+        const responseContainer = document.getElementById('responseContainer');
+        if (response.ok) {
+          responseContainer.innerHTML = `<h2>Response</h2><p>${data.answer}</p>`;
+        } else {
+          responseContainer.innerHTML = `<p>Error: ${data.detail}</p>`;
+        }
+      } catch (error) {
+        console.error('Error submitting query:', error);
+        alert('Query failed');
+      }
+    }
+  </script>
 </body>
 </html>
